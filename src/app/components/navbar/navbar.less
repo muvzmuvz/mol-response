@@ -1,0 +1,53 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #007acc; // красивый зеленовато-синий цвет
+    padding: 12px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 0px 0px 30px 30px;
+
+    .logo {
+        color: #fff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+        user-select: none;
+        letter-spacing: 1.5px;
+    }
+
+    .search-input {
+        width: 280px;
+        max-width: 100%;
+        padding: 8px 14px;
+        font-size: 16px;
+        border-radius: 24px;
+        border: none;
+        outline: none;
+        transition: box-shadow 0.3s ease, background-color 0.3s ease;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+        &::placeholder {
+
+            font-style: italic;
+        }
+
+        &:focus {}
+    }
+
+    @media (max-width: 480px) {
+        flex-direction: column;
+        align-items: stretch;
+
+        .logo {
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            font-size: 14px;
+        }
+    }
+}
