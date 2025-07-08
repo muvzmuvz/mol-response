@@ -14,7 +14,7 @@
   <!-- Отображение выбранного маршрута -->
   <p tuiTextfieldSize="m" class="filters">
     <tui-textfield class="input">
-      <label tuiLabel>Поиск по таблице</label>
+      <label [style.width.px]="100" tuiLabel>Поиск по таблице</label>
       <input tuiTextfield [size]="size" [style.width.px]="300" placeholder="Введите для поиска..." [(ngModel)]="search"
         class="search-input" />
     </tui-textfield>

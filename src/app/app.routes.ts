@@ -5,5 +5,9 @@ export const routes: Routes = [
     {
         path:'',
         component: HomePage
+    },
+    {
+        path: 'history',
+        loadComponent: () => import('./pages/history-page/history-page').then(m => m.HistoryPage)
     }
 ];
