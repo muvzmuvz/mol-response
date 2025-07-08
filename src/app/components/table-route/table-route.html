@@ -1,25 +1,36 @@
-<tui-textfield tuiChevron class="filter">
-  <input
-    tuiSelect
-    [(ngModel)]="selectedRoute" 
-    placeholder="Выберите маршрут"
-  />
+<!-- Поле поиска -->
 
-  <tui-data-list-wrapper
-    *tuiTextfieldDropdown
-    [items]="routeOptions"
-  />
-</tui-textfield>
 
-<!-- 📋 Таблица -->
-<table tuiTable [size]="size" [style.width.%]="100">
+<!-- Выбор маршрута -->
+<div class="route-selector">
+  <label>
+    <select [formControl]="routeControl" class="custom-select">
+      <option *ngFor="let option of routeOptions" [value]="option.id">
+        {{ option.name }}
+      </option>
+    </select>
+  </label>
+
+  <!-- Отображение выбранного маршрута -->
+  <p tuiTextfieldSize="m" class="filters">
+  <tui-textfield class="input">
+    <label tuiLabel>Поиск по таблице</label>
+    <input
+      tuiTextfield
+      [size]="size" [style.width.px]="300"
+      placeholder="Введите для поиска..."
+      [(ngModel)]="search"
+      class="search-input"
+    />
+  </tui-textfield>
+</p>
+</div>
+
+<!-- Таблица маршрутов -->
+<table tuiTable [size]="size" [style.width.%]="95">
   <thead>
     <tr>
-      <th tuiTh>
-        <div [tuiCell]="size">
-          <span tuiTitle>Маршруты</span>
-        </div>
-      </th>
+      <th tuiTh>Маршруты</th>
       <th tuiTh>Организация</th>
       <th tuiTh>Номер телефона</th>
       <th tuiTh>Статус</th>
@@ -39,14 +50,8 @@
       <td tuiTd>
         <div [tuiCell]="size">
           <span tuiTitle>
-            <span tuiStatus>
-              {{ item.title.title }}
-            </span>
-            <ng-template #subtitle>
-              <span tuiSubtitle>
-                {{ item.title.subtitle }}
-              </span>
-            </ng-template>
+            {{ item.title.title }}
+            <span tuiSubtitle *ngIf="item.title.subtitle">{{ item.title.subtitle }}</span>
           </span>
         </div>
       </td>
@@ -62,14 +67,24 @@
         <span [tuiStatus]="item.status.color">{{ item.status.value }}</span>
       </td>
       <td tuiTd>
-        <span tuiStatus>
-          <button appearance="action" iconStart="@tui.pencil" size="xs" tuiIconButton type="button">
-            Изменить
-          </button>
-          <button appearance="action" iconStart="@tui.ellipsis" size="xs" tuiIconButton type="button">
-            Еще
-          </button>
-        </span>
+        <button
+          appearance="action"
+          iconStart="@tui.pencil"
+          size="xs"
+          tuiIconButton
+          type="button"
+        >
+          Изменить
+        </button>
+        <button
+          appearance="action"
+          iconStart="@tui.ellipsis"
+          size="xs"
+          tuiIconButton
+          type="button"
+        >
+          Еще
+        </button>
       </td>
     </tr>
   </tbody>

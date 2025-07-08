@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgForOf, NgIf } from '@angular/common';
 import {
   TuiAutoColorPipe,
@@ -10,9 +10,9 @@ import {
   TuiLink,
   TuiTitle,
   tuiItemsHandlersProvider,
-  TuiTextfield,
+    TuiTextfield,
+  TuiLabel, // Добавлен TuiLabel
 } from '@taiga-ui/core';
-import { TuiChevron, TuiDataListWrapper, TuiSelect } from '@taiga-ui/kit';
 import {
   TuiAvatar,
   TuiBadge,
@@ -22,9 +22,11 @@ import {
   TuiProgressBar,
   TuiRadioList,
   TuiStatus,
+ // Добавлен TuiTextfield
 } from '@taiga-ui/kit';
 import { TuiCell } from '@taiga-ui/layout';
-import { TuiTable } from '@taiga-ui/addon-table';
+import { TuiTable, TuiTableFilters } from '@taiga-ui/addon-table';
+import { FormsModule } from '@angular/forms';
 
 interface RouteOption {
   id: string;
@@ -35,7 +37,7 @@ interface RouteOption {
   selector: 'app-table-route',
   standalone: true,
   imports: [
-    FormsModule,
+    ReactiveFormsModule,
     NgForOf,
     NgIf,
     TuiAutoColorPipe,
@@ -54,11 +56,11 @@ interface RouteOption {
     TuiRadioList,
     TuiStatus,
     TuiTable,
+    TuiTableFilters,
     TuiTitle,
-    TuiTextfield,
-    TuiChevron,
-    TuiDataListWrapper,
-    TuiSelect,
+    FormsModule,
+    TuiLabel, // добавлен
+    TuiTextfield, // добавлен
   ],
   templateUrl: './table-route.html',
   styleUrl: './table-route.less',
@@ -72,12 +74,21 @@ interface RouteOption {
 export class TableRoute {
   protected readonly sizes = ['l', 'm', 's'] as const;
   protected size = this.sizes[0];
+  
+  // Свойство для поиска
+  protected search = '';
 
-  // ЗАМЕНА: используем обычное свойство вместо сигнала
-  protected selectedRoute: RouteOption = { id: 'all', name: 'Все маршруты' };
+  protected readonly form = new FormGroup({
+    route: new FormControl<string>('all'),
+  });
+
+  get routeControl(): FormControl<string> {
+    return this.form.get('route') as FormControl<string>;
+  }
 
   protected readonly data = [
     {
+      id: 1,
       checkbox: { title: 'Саки-4' },
       title: {
         icon: '@tui.file',
@@ -96,6 +107,7 @@ export class TableRoute {
       selected: false,
     },
     {
+      id: 2,
       checkbox: { title: 'Саки-3', subtitle: 'Некоторый дополнительный текст' },
       title: {
         icon: '@tui.heart',
@@ -114,7 +126,8 @@ export class TableRoute {
       selected: false,
     },
     {
-      checkbox: { title: 'Саки-2' },
+      id: 3,
+      checkbox: { title: 'Евпатория-2' },
       title: { title: 'ИП Петров' },
       cell: {
         name: 'Петр Петров',
@@ -127,26 +140,67 @@ export class TableRoute {
       },
       selected: false,
     },
+    {
+      id: 4,
+      checkbox: { title: 'Севастополь-1' },
+      title: { title: 'ИП Иванов' },
+      cell: {
+        name: 'Иван Иванов',
+        email: 'ivan@example.com',
+        phone: '+7 (999) 555-44-33',
+      },
+      status: {
+        value: 'Выполнено',
+        color: 'var(--tui-status-positive)',
+      },
+      selected: false,
+    },
   ];
 
-  protected get routeOptions(): RouteOption[] {
+  protected routeOptions: RouteOption[] = [];
+
+  constructor() {
     const routes = this.data
       .map((item) => item.checkbox.title.split('-')[0])
       .filter(Boolean);
-
-    const unique = Array.from(new Set(routes));
-    return [{ id: 'all', name: 'Все маршруты' }, ...unique.map((name) => ({ id: name, name }))];
+      
+    const uniqueRoutes = Array.from(new Set(routes));
+    
+    this.routeOptions = [
+      { id: 'all', name: 'Все маршруты' },
+      ...uniqueRoutes.map(name => ({ id: name, name }))
+    ];
   }
 
-  // ОБНОВЛЕННЫЙ МЕТОД: работаем с обычным свойством
   protected get filteredData() {
-    if (!this.selectedRoute || this.selectedRoute.id === 'all') {
-      return this.data;
+    const selectedRouteId = this.routeControl.value;
+    const searchTerm = this.search ? this.search.toLowerCase().trim() : '';
+
+    // Фильтрация по маршруту
+    let filtered = this.data;
+    if (selectedRouteId !== 'all') {
+      filtered = filtered.filter(item => 
+        item.checkbox.title.toLowerCase().startsWith(selectedRouteId.toLowerCase())
+      );
     }
 
-    return this.data.filter((item) =>
-      item.checkbox.title.toLowerCase().startsWith(this.selectedRoute.id.toLowerCase())
-    );
+    // Фильтрация по поисковому запросу
+    if (searchTerm) {
+      filtered = filtered.filter(item => 
+        this.isMatch(item.checkbox.title, searchTerm) ||
+        this.isMatch(item.title.title, searchTerm) ||
+        this.isMatch(item.cell.name, searchTerm) ||
+        this.isMatch(item.cell.phone, searchTerm) ||
+        this.isMatch(item.status.value, searchTerm)
+      );
+    }
+
+    return filtered;
+  }
+
+  // Проверяет, содержит ли строка искомый термин
+  private isMatch(value: string | undefined, searchTerm: string): boolean {
+    return value?.toLowerCase().includes(searchTerm) ?? false;
   }
 
   protected get checked(): boolean | null {
@@ -156,7 +210,7 @@ export class TableRoute {
   }
 
   protected onCheck(checked: boolean): void {
-    this.data.forEach((item) => {
+    this.data.forEach(item => {
       item.selected = checked;
     });
   }
