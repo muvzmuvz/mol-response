@@ -13,17 +13,15 @@
 
   <!-- Отображение выбранного маршрута -->
   <p tuiTextfieldSize="m" class="filters">
-  <tui-textfield class="input">
-    <label tuiLabel>Поиск по таблице</label>
-    <input
-      tuiTextfield
-      [size]="size" [style.width.px]="300"
-      placeholder="Введите для поиска..."
-      [(ngModel)]="search"
-      class="search-input"
-    />
-  </tui-textfield>
-</p>
+    <tui-textfield class="input">
+      <label tuiLabel>Поиск по таблице</label>
+      <input tuiTextfield [size]="size" [style.width.px]="300" placeholder="Введите для поиска..." [(ngModel)]="search"
+        class="search-input" />
+    </tui-textfield>
+  </p>
+  <button tuiButton appearance="primary" size="m" class="add-route-button" (click)="addRoute()">
+    Добавить маршрут
+  </button>
 </div>
 
 <!-- Таблица маршрутов -->
@@ -67,25 +65,63 @@
         <span [tuiStatus]="item.status.color">{{ item.status.value }}</span>
       </td>
       <td tuiTd>
-        <button
-          appearance="action"
-          iconStart="@tui.pencil"
-          size="xs"
-          tuiIconButton
-          type="button"
-        >
+        <button appearance="action" iconStart="@tui.pencil" size="xs" tuiIconButton type="button"
+          (click)="editRoute(item.id)">
           Изменить
         </button>
-        <button
-          appearance="action"
-          iconStart="@tui.ellipsis"
-          size="xs"
-          tuiIconButton
-          type="button"
-        >
+        <button appearance="action" iconStart="@tui.ellipsis" size="xs" tuiIconButton type="button">
           Еще
         </button>
       </td>
     </tr>
   </tbody>
 </table>
+
+<div class="modal" *ngIf="isAddModalOpen">
+  <div class="modal-content">
+    <h3>Добавить маршрут</h3>
+    <form [formGroup]="addForm" (ngSubmit)="submitAddForm()">
+      <label>Маршрут: <input formControlName="routeTitle" /></label>
+      <label>Организация: <input formControlName="organization" /></label>
+      <label>Имя: <input formControlName="name" /></label>
+      <label>Телефон: <input formControlName="phone" /></label>
+      <label>Email: <input formControlName="email" /></label>
+      <label>Статус:
+        <select formControlName="status">
+          <option>В процессе</option>
+          <option>Выполнено</option>
+          <option>Не выполнено</option>
+        </select>
+      </label>
+      <div class="modal-buttons">
+        <button tuiButton appearance="primary" type="submit">Сохранить</button>
+        <button tuiButton type="button" (click)="cancelModals()">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 🔹 Модалка: Редактировать маршрут -->
+<div class="modal" *ngIf="isEditModalOpen">
+  <div class="modal-content">
+    <h3>Редактировать маршрут</h3>
+    <form [formGroup]="editForm" (ngSubmit)="submitEditForm()">
+      <label>Маршрут: <input formControlName="routeTitle" /></label>
+      <label>Организация: <input formControlName="organization" /></label>
+      <label>Имя: <input formControlName="name" /></label>
+      <label>Телефон: <input formControlName="phone" /></label>
+      <label>Email: <input formControlName="email" /></label>
+      <label>Статус:
+        <select formControlName="status">
+          <option>В процессе</option>
+          <option>Выполнено</option>
+          <option>Не выполнено</option>
+        </select>
+      </label>
+      <div class="modal-buttons">
+        <button tuiButton appearance="primary" type="submit">Сохранить</button>
+        <button tuiButton type="button" (click)="cancelModals()">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
