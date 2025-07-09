@@ -3,21 +3,23 @@ import { ClientService } from './client.service';
 import { Delete } from '@nestjs/common';
 
 interface CreateClientDto {
-    routeTitle: string;
-    organization: string;
-    name: string;
-    phone: string;
-    email: string;
-    status: string;
+  routeTitle: string;
+  organization: string;
+  name: string;
+  phone: string;
+  email: string;
+  status: string;
+  comment?: string; // добавлено
 }
 
 interface UpdateClientDto {
-    routeTitle?: string;
-    organization?: string;
-    name?: string;
-    phone?: string;
-    email?: string;
-    status?: string;
+  routeTitle?: string;
+  organization?: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  status?: string;
+  comment?: string; // добавлено
 }
 
 @Controller('clients')

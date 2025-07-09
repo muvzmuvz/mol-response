@@ -28,11 +28,29 @@
 <table tuiTable [size]="size" [style.width.%]="95">
   <thead>
     <tr>
-      <th tuiTh>Маршруты</th>
-      <th tuiTh>Организация</th>
-      <th tuiTh>Номер телефона</th>
-      <th tuiTh>Статус</th>
-      <th tuiTh>Действия</th>
+      <th tuiTh (click)="onSort('route')">
+        Маршруты
+        <span *ngIf="sortColumn === 'route'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
+      <th tuiTh (click)="onSort('organization')">
+        Организация
+        <span *ngIf="sortColumn === 'organization'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
+      <th tuiTh (click)="onSort('phone')">
+        Номер телефона
+        <span *ngIf="sortColumn === 'phone'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
+      <th tuiTh (click)="onSort('status')">
+        Статус
+        <span *ngIf="sortColumn === 'status'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
+        
+      <th tuiTh>
+        Комментарий
+      </th>
+      <th tuiTh>
+        Действия
+      </th>
     </tr>
   </thead>
   <tbody tuiTbody>
@@ -64,19 +82,22 @@
       <td tuiTd>
         <span [tuiStatus]="item.status.color">{{ item.status.value }}</span>
       </td>
+            <td tuiTd>
+        <span tuiTitle>{{ item.comment }}</span>
+      </td>
       <td tuiTd>
         <div class="table-button">
-        <button appearance="action" iconStart="@tui.pencil" size="s" tuiIconButton type="button"
-          (click)="editRoute(item.id)">
-          Изменить
-        </button>
-        <!-- <button appearance="action" iconStart="@tui.ellipsis" size="xs" tuiIconButton type="button">
+          <button appearance="action" iconStart="@tui.pencil" size="s" tuiIconButton type="button"
+            (click)="editRoute(item.id)">
+            Изменить
+          </button>
+          <!-- <button appearance="action" iconStart="@tui.ellipsis" size="xs" tuiIconButton type="button">
           Еще
         </button> -->
-        <button appearance="error" iconStart="@tui.trash" size="s" tuiIconButton type="button"
-          (click)="deleteRoute(item.id)">
-          Удалить
-        </button>
+          <button appearance="error" iconStart="@tui.trash" size="s" tuiIconButton type="button"
+            (click)="deleteRoute(item.id)">
+            Удалить
+          </button>
         </div>
       </td>
     </tr>
@@ -92,6 +113,7 @@
       <label>Имя: <input formControlName="name" /></label>
       <label>Телефон: <input formControlName="phone" /></label>
       <label>Email: <input formControlName="email" /></label>
+      <label>Комментарий: <input formControlName="comment" /></label>
       <label>Статус:
         <select formControlName="status">
           <option>В процессе</option>
@@ -117,6 +139,7 @@
       <label>Имя: <input formControlName="name" /></label>
       <label>Телефон: <input formControlName="phone" /></label>
       <label>Email: <input formControlName="email" /></label>
+      <label>Комментарий: <input formControlName="comment" /></label>
       <label>Статус:
         <select formControlName="status">
           <option>В процессе</option>

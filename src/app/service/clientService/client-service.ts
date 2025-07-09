@@ -13,6 +13,7 @@ export interface ClientDto {
   phone: string;
   email: string;
   status: string;
+  comment: string;
 }
 
 export interface CreateClientDto {
@@ -22,6 +23,7 @@ export interface CreateClientDto {
   phone: string;
   email: string;
   status: string;
+  comment: string;
 }
 
 @Injectable({ providedIn: 'root' })

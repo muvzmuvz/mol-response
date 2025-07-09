@@ -10,26 +10,30 @@ export class TasksService {
         private hs: HistoryService,
     ) { }
 
-    @Cron('0 0 * * *') // Выполняется каждый день в полночь
+    @Cron('0 0 * * *')
     async resetStatuses() {
         try {
             const clients = await this.cs.findAll();
 
             for (const client of clients) {
-                if (client.status !== 'В процессе') {
-                    // Записываем в историю
+                if (client.status !== 'В процессе' || client.comment !== '') {
+                    // сохраняем историю перед сбросом
                     await this.hs.record(client);
 
-                    // Обновляем статус через новый метод update
-                    await this.cs.update(client.id, {
-                        status: 'В процессе'
-                    });
+                    await this.cs.update(
+                        client.id,
+                        {
+                            status: 'В процессе',
+                            comment: '', // очищаем комментарий
+                        },
+                        true // не писать в историю повторно
+                    );
                 }
             }
 
-            console.log('Statuses reset at', new Date().toISOString());
+            console.log('Statuses and comments reset at', new Date().toISOString());
         } catch (error) {
-            console.error('Error resetting statuses:', error);
+            console.error('Error resetting statuses and comments:', error);
         }
     }
 }

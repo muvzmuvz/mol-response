@@ -6,7 +6,7 @@ import { RouteService } from '../route/route.service';
 import { HistoryService } from '../history/history.service';
 import { History } from '../history/history.entity';
 
-
+// DTO для создания клиента
 interface CreateClientDto {
     routeTitle: string;
     organization: string;
@@ -14,8 +14,10 @@ interface CreateClientDto {
     phone: string;
     email: string;
     status: string;
+    comment?: string; // Новый параметр комментария
 }
 
+// DTO для обновления клиента
 interface UpdateClientDto {
     routeTitle?: string;
     organization?: string;
@@ -23,6 +25,7 @@ interface UpdateClientDto {
     phone?: string;
     email?: string;
     status?: string;
+    comment?: string; // Новый параметр комментария
 }
 
 @Injectable()
@@ -32,8 +35,9 @@ export class ClientService {
         private repo: Repository<Client>,
         private routeService: RouteService,
         private historyService: HistoryService
-    ) { }
+    ) {}
 
+    // Создание клиента
     async create(dto: CreateClientDto) {
         if (!dto.routeTitle) {
             throw new BadRequestException('routeTitle is required');
@@ -50,17 +54,19 @@ export class ClientService {
             phone: dto.phone,
             email: dto.email,
             status: dto.status,
-            route,  // обязательно передаём объект маршрута
+            comment: dto.comment ?? '', // Сохраняем комментарий, если передан
+            route,
         });
 
         const savedClient = await this.repo.save(client);
 
         return this.repo.findOne({
             where: { id: savedClient.id },
-            relations: ['route']
+            relations: ['route'],
         });
     }
 
+    // Получение всех клиентов
     findAll() {
         return this.repo.find({
             order: { createdAt: 'DESC' },
@@ -68,8 +74,8 @@ export class ClientService {
         });
     }
 
-    async update(id: number, dto: UpdateClientDto) {
-        // Находим клиента по id с загрузкой маршрута
+    // Обновление клиента
+    async update(id: number, dto: UpdateClientDto, skipHistory = false) {
         const client = await this.repo.findOne({
             where: { id },
             relations: ['route'],
@@ -79,32 +85,31 @@ export class ClientService {
             throw new NotFoundException('Client not found');
         }
 
-        // Если пришёл новый маршрут — ищем или создаём его
         if (dto.routeTitle) {
             const route = await this.routeService.findOrCreate(dto.routeTitle);
             client.route = route;
         }
 
-        // Обновляем поля клиента, если они указаны в dto
         client.organization = dto.organization ?? client.organization;
         client.name = dto.name ?? client.name;
         client.phone = dto.phone ?? client.phone;
         client.email = dto.email ?? client.email;
         client.status = dto.status ?? client.status;
+        client.comment = dto.comment ?? client.comment; // Обновляем комментарий
 
-        // Сохраняем обновлённого клиента в базе
         await this.repo.save(client);
 
-        // --- ВАЖНО: сохраняем текущие данные клиента в историю ---
-        await this.historyService.record(client);
+        if (!skipHistory) {
+            await this.historyService.record(client); // Сохраняем в историю
+        }
 
-        // Возвращаем обновлённого клиента с маршрутом
         return this.repo.findOne({
             where: { id },
             relations: ['route'],
         });
     }
 
+    // Удаление клиента
     async remove(id: number) {
         const client = await this.repo.findOne({ where: { id } });
 
@@ -112,16 +117,13 @@ export class ClientService {
             throw new NotFoundException('Client not found');
         }
 
-        // Удаляем историю, связанную с клиентом
         await this.historyService.deleteByClientId(id);
-
-        // Удаляем клиента
         await this.repo.remove(client);
 
         return { message: `Client with id ${id} has been deleted` };
     }
 
-
+    // Получение клиентов вместе с историей
     async findAllWithHistory() {
         const clients = await this.repo.find({
             relations: ['route'],
@@ -140,5 +142,4 @@ export class ClientService {
 
         return result;
     }
-
 }

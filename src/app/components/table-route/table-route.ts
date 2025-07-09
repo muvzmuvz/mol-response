@@ -42,6 +42,28 @@ export class TableRoute implements OnInit {
   protected search = '';
   protected readonly sizes = ['l', 'm', 's'] as const;
   protected size = this.sizes[0];
+  protected sortColumn: string = '';
+  protected sortDirection: 'asc' | 'desc' = 'asc';
+
+  protected onSort(column: string): void {
+    if (this.sortColumn === column) {
+      if (this.sortDirection === 'asc') {
+        // Первый клик по колонке - сортировка по возрастанию уже была,
+        // переключаем на убывание
+        this.sortDirection = 'desc';
+      } else if (this.sortDirection === 'desc') {
+        // Второй клик по колонке - был убывающий порядок,
+        // третий клик - сбрасываем сортировку
+        this.sortColumn = '';
+        this.sortDirection = 'asc'; // сбрасываем на asc для следующей сортировки
+      }
+    } else {
+      // Клик по новой колонке - сортируем по возрастанию
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+  }
+
 
   protected readonly form = new FormGroup({
     route: new FormControl<string>('all'),
@@ -71,7 +93,6 @@ export class TableRoute implements OnInit {
       error: (err) => console.error('Ошибка загрузки маршрутов:', err)
     });
   }
-
   private mapDtoToView(dto: ClientDto) {
     return {
       id: dto.id!,
@@ -90,8 +111,9 @@ export class TableRoute implements OnInit {
         value: dto.status,
         color: this.getStatusColor(dto.status),
       },
+      comment: dto.comment, // 🔹 ВОТ ЭТО ДОБАВЛЯЕМ
       selected: false,
-      route: dto.route // Сохраняем объект маршрута
+      route: dto.route,
     };
   }
 
@@ -116,7 +138,28 @@ export class TableRoute implements OnInit {
       );
     }
 
+    if (this.sortColumn) {
+      filtered.sort((a, b) => {
+        const valA = this.getSortValue(a, this.sortColumn);
+        const valB = this.getSortValue(b, this.sortColumn);
+
+        if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
     return filtered;
+  }
+
+  private getSortValue(item: any, column: string): string {
+    switch (column) {
+      case 'route': return item.checkbox.title?.toLowerCase() || '';
+      case 'organization': return item.title.title?.toLowerCase() || '';
+      case 'phone': return item.cell.phone?.toLowerCase() || '';
+      case 'status': return item.status.value?.toLowerCase() || '';
+      default: return '';
+    }
   }
 
   private isMatch(value: string | undefined, searchTerm: string): boolean {
@@ -143,6 +186,7 @@ export class TableRoute implements OnInit {
     name: new FormControl('', { nonNullable: true }),
     phone: new FormControl('', { nonNullable: true }),
     email: new FormControl('', { nonNullable: true }),
+    comment: new FormControl('', { nonNullable: true }), // Добавлено поле комментария
     status: new FormControl('В процессе', { nonNullable: true }),
   });
 
@@ -152,6 +196,7 @@ export class TableRoute implements OnInit {
     name: new FormControl('', { nonNullable: true }),
     phone: new FormControl('', { nonNullable: true }),
     email: new FormControl('', { nonNullable: true }),
+    comment: new FormControl('', { nonNullable: true }), // Добавлено поле комментария
     status: new FormControl('', { nonNullable: true }),
   });
 
@@ -205,6 +250,7 @@ export class TableRoute implements OnInit {
       phone: item.cell.phone,
       email: item.cell.email,
       status: item.status.value,
+      comment: item.comment,
     });
     this.isEditModalOpen = true;
   }

@@ -4,6 +4,7 @@ import {
 } from 'typeorm';
 import { Route } from '../route/route.entity';
 
+// client.entity.ts
 @Entity()
 export class Client {
   @PrimaryGeneratedColumn()
@@ -24,6 +25,9 @@ export class Client {
   @Column()
   status: string;
 
+  @Column({ default: '' }) // добавлено поле комментария
+  comment: string;
+
   @ManyToOne(() => Route, { eager: true, nullable: false })
   route: Route;
 
@@ -33,3 +37,4 @@ export class Client {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+

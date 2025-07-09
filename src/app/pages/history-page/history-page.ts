@@ -7,13 +7,10 @@ import {
   TuiInputDateRange,
   TuiCalendarRange,
 } from '@taiga-ui/kit';
-import {
-  TuiStatus,
-} from '@taiga-ui/kit';
-import {
-  TuiTable
-} from '@taiga-ui/addon-table';
+import { TuiStatus } from '@taiga-ui/kit';
+import { TuiTable } from '@taiga-ui/addon-table';
 import { TuiTextfield } from '@taiga-ui/core';
+
 import { HistoryService } from '../../service/historyService/history-service';
 import { Navbar } from '../../components/navbar/navbar';
 
@@ -38,6 +35,8 @@ import { Navbar } from '../../components/navbar/navbar';
 export class HistoryPage implements OnInit {
   constructor(private historyService: HistoryService) { }
 
+  sortColumn: string = ''; // какая колонка сортируется
+  sortDirection: 'asc' | 'desc' = 'asc'; // направление сортировки
   search = '';
   data: any[] = [];
   routeOptions: { id: string; name: string }[] = [];
@@ -45,17 +44,40 @@ export class HistoryPage implements OnInit {
   size: 's' | 'm' | 'l' = 'm';
   route = 'all';
 
-  // Начальные даты в формате Date
-  dateRange = {
-    from: '2025-01-01', // теперь строки для работы с input[type="date"]
-    to: new Date().toISOString().split('T')[0], // текущая дата в формате 'yyyy-mm-dd'
+  // Функция для форматирования даты в "YYYY-MM-DD"
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Вычисляем вчерашнюю дату для установки в dateRange.to
+  private getYesterday(): string {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return this.formatDate(yesterday);
+  }
+  private getToday(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Диапазон дат с типом, где from и to — строки в формате "YYYY-MM-DD" или null
+  dateRange: { from: string | null; to: string | null } = {
+    from: this.getYesterday(),
+    to: this.getToday(),
   };
 
   minDateString = '2023-01-01';
-  maxDateString = new Date().toISOString().split('T')[0];
+  maxDateString = (() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+  })();
 
-  minDate = new TuiDay(2023, 0, 1);
-  maxDate = TuiDay.currentLocal();
 
   ngOnInit(): void {
     this.loadHistory();
@@ -76,6 +98,7 @@ export class HistoryPage implements OnInit {
             phone: client.phone,
             status: entry.status,
             date: entry.date,
+            comment: client.comment, // ISO строка с датой и временем
           });
         }
       }
@@ -98,19 +121,25 @@ export class HistoryPage implements OnInit {
   get filteredData() {
     const searchTerm = this.search.toLowerCase().trim();
 
-    // Преобразуем строки в объекты Date для корректного сравнения
-    const fromDate = this.dateRange.from ? new Date(this.dateRange.from) : null;
-    const toDate = this.dateRange.to ? new Date(this.dateRange.to) : null;
+    // Преобразуем строки из dateRange в миллисекунды для сравнения
+    const fromDate = this.dateRange.from
+      ? new Date(this.dateRange.from + 'T00:00:00').getTime()
+      : null;
 
-    return this.data.filter((item) => {
+    const toDate = this.dateRange.to
+      ? new Date(this.dateRange.to + 'T23:59:59.999').getTime()
+      : null;
+
+    let filtered = this.data.filter((item) => {
       const routeMatch =
         this.route === 'all' ||
         item.routeTitle.toLowerCase().startsWith(this.route.toLowerCase());
 
-      const date = new Date(item.date);
+      const itemDate = new Date(item.date).getTime();
+
       const dateMatch =
-        (!fromDate || date >= fromDate) &&
-        (!toDate || date <= toDate);
+        (!fromDate || itemDate >= fromDate) &&
+        (!toDate || itemDate <= toDate);
 
       const searchMatch =
         !searchTerm ||
@@ -122,6 +151,41 @@ export class HistoryPage implements OnInit {
 
       return routeMatch && dateMatch && searchMatch;
     });
+
+    if (this.sortColumn) {
+      filtered = filtered.sort((a, b) => {
+        let aVal = a[this.sortColumn];
+        let bVal = b[this.sortColumn];
+
+        if (this.sortColumn === 'date') {
+          aVal = new Date(aVal);
+          bVal = new Date(bVal);
+        } else {
+          aVal = aVal?.toString().toLowerCase() || '';
+          bVal = bVal?.toString().toLowerCase() || '';
+        }
+
+        if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }
+
+  sortBy(column: string) {
+    if (this.sortColumn === column) {
+      if (this.sortDirection === 'asc') {
+        this.sortDirection = 'desc';
+      } else if (this.sortDirection === 'desc') {
+        this.sortColumn = '';
+        this.sortDirection = 'asc';
+      }
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
   }
 
   getStatusColor(status: string): string {
@@ -134,4 +198,20 @@ export class HistoryPage implements OnInit {
         return 'var(--tui-status-warning)';
     }
   }
+
+  // Форматируем дату с временем для отображения
+  formatDateTime(dateString: string): string {
+    const d = new Date(dateString);
+    return d.toLocaleString('ru-RU', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  }
 }
+
+
+

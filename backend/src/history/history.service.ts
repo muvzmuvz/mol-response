@@ -15,7 +15,7 @@ export class HistoryService {
     const h = this.repo.create({
       client,
       status: client.status,
-      date: new Date().toISOString().slice(0, 10),
+      date: new Date(), // сохраняем дату и время
     });
     return this.repo.save(h);
   }

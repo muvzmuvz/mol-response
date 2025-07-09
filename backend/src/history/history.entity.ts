@@ -12,7 +12,7 @@ export class History {
   @Column()
   status: string;
 
-  @Column()
-  date: string;
-}
 
+  @Column({ type: 'datetime' }) // или 'datetime' в зависимости от БД
+  date: Date;
+}
