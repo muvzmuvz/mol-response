@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
+import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
 
 import { RouteModule } from './route/route.module';
 import { ClientModule } from './clients/client.module';
@@ -11,8 +13,8 @@ import { TasksModule } from './tasks/tasks.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'db.sqlite',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      database: join(process.cwd(), 'data', 'db.sqlite'),
+      entities: [join(__dirname, '/**/*.entity{.ts,.js}')],
       synchronize: true,
     }),
     ScheduleModule.forRoot(),
@@ -22,4 +24,9 @@ import { TasksModule } from './tasks/tasks.module';
     TasksModule,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  constructor() {
+    const path = join(process.cwd(), 'data');
+    if (!existsSync(path)) mkdirSync(path);
+  }
+}
