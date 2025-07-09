@@ -1,46 +1,58 @@
-<app-navbar></app-navbar><!-- Фильтры -->
-<div class="filters-row">
-    <!-- Выбор маршрута -->
-    <label>
-        <select [(ngModel)]="route" class="custom-select">
-            <option *ngFor="let option of routeOptions" [value]="option.id">
-                {{ option.name }}
-            </option>
-        </select>
-    </label>
+<app-navbar></app-navbar>
+<div class="main-table">
+    <!-- Фильтры -->
+    <div class="filters-row">
+        <!-- Выбор маршрута -->
+        <label>
+            <select [(ngModel)]="route" class="custom-select">
+                <option *ngFor="let option of routeOptions" [value]="option.id">
+                    {{ option.name }}
+                </option>
+            </select>
+        </label>
 
-    <!-- Выбор периода -->
-    <tui-textfield [tuiTextfieldCleaner]="true">
-        <label tuiLabel>Период:</label>
-        <input tuiInputDateRange [(ngModel)]="dateRange" [tuiTextfieldSize]="'m'" />
-        <tui-calendar-range [min]="minDate" [max]="maxDate" *tuiTextfieldDropdown />
-    </tui-textfield>
+        <!-- Выбор периода с календарём -->
+        <label >
+            <span>Период:</span>
+            <div class="date-range-picker">
+                <input type="date" [(ngModel)]="dateRange.from" [min]="minDateString" [max]="maxDateString" />
+                <span>—</span>
+                <input type="date" [(ngModel)]="dateRange.to" [min]="minDateString" [max]="maxDateString" />
+            </div>
+        </label>
+        <p tuiTextfieldSize="m" class="filters">
+            <tui-textfield class="input">
+                <label [style.width.px]="100" tuiLabel>Поиск по таблице</label>
+                <input tuiTextfield [size]="size" [style.width.px]="300" placeholder="Введите для поиска..."
+                    [(ngModel)]="search" class="search-input" />
+            </tui-textfield>
+        </p>
+    </div>
+    <div>
+        <!-- Таблица истории -->
+        <table tuiTable [size]="size" [style.width.%]="95">
+            <thead>
+                <tr>
+                    <th tuiTh>Маршрут</th>
+                    <th tuiTh>Организация</th>
+                    <th tuiTh>Имя</th>
+                    <th tuiTh>Телефон</th>
+                    <th tuiTh>Статус</th>
+                    <th tuiTh>Дата</th>
+                </tr>
+            </thead>
+            <tbody tuiTbody>
+                <tr *ngFor="let item of filteredData">
+                    <td tuiTd>{{ item.routeTitle }}</td>
+                    <td tuiTd>{{ item.organization }}</td>
+                    <td tuiTd>{{ item.name }}</td>
+                    <td tuiTd>{{ item.phone }}</td>
+                    <td tuiTd>
+                        <span [tuiStatus]="getStatusColor(item.status)">{{ item.status }}</span>
+                    </td>
+                    <td tuiTd>{{ item.date | date: 'dd.MM.yyyy' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-
-<!-- Таблица истории -->
-<table tuiTable [size]="size" [style.width.%]="95">
-    <thead>
-        <tr>
-            <th tuiTh>Маршрут</th>
-            <th tuiTh>Организация</th>
-            <th tuiTh>Имя</th>
-            <th tuiTh>Телефон</th>
-            <th tuiTh>Статус</th>
-            <th tuiTh>Дата</th>
-        </tr>
-    </thead>
-    <tbody tuiTbody>
-        <tr *ngFor="let item of filteredData">
-            <td tuiTd>{{ item.routeTitle }}</td>
-            <td tuiTd>{{ item.organization }}</td>
-            <td tuiTd>{{ item.name }}</td>
-            <td tuiTd>{{ item.phone }}</td>
-            <td tuiTd>
-                <span [tuiStatus]="getStatusColor(item.status)">
-                    {{ item.status }}
-                </span>
-            </td>
-            <td tuiTd>{{ item.date }}</td>
-        </tr>
-    </tbody>
-</table>

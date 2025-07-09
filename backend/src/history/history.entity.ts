@@ -15,3 +15,4 @@ export class History {
   @Column()
   date: string;
 }
+

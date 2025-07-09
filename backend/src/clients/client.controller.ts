@@ -42,4 +42,8 @@ export class ClientController {
     remove(@Param('id') id: string) {
         return this.svc.remove(+id);
     }
+    @Get('with-history')
+    getClientsWithHistory() {
+        return this.svc.findAllWithHistory();
+    }
 }

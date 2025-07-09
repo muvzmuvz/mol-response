@@ -65,17 +65,19 @@
         <span [tuiStatus]="item.status.color">{{ item.status.value }}</span>
       </td>
       <td tuiTd>
-        <button appearance="action" iconStart="@tui.pencil" size="xs" tuiIconButton type="button"
+        <div class="table-button">
+        <button appearance="action" iconStart="@tui.pencil" size="s" tuiIconButton type="button"
           (click)="editRoute(item.id)">
           Изменить
         </button>
-        <button appearance="action" iconStart="@tui.ellipsis" size="xs" tuiIconButton type="button">
+        <!-- <button appearance="action" iconStart="@tui.ellipsis" size="xs" tuiIconButton type="button">
           Еще
-        </button>
-        <button appearance="error" iconStart="@tui.trash" size="xs" tuiIconButton type="button"
+        </button> -->
+        <button appearance="error" iconStart="@tui.trash" size="s" tuiIconButton type="button"
           (click)="deleteRoute(item.id)">
           Удалить
         </button>
+        </div>
       </td>
     </tr>
   </tbody>

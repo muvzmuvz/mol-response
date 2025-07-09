@@ -1,8 +1,12 @@
 <div class="header">
-    <div class="logo"><h2>Маршруты</h2></div>
-  <input
-    type="text"
-    placeholder="Поиск по маршрутам..."
-    class="search-input"
-  />
+  <div class="logo">
+    <a routerLink="/" class="go-main" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+      <h2>Маршруты</h2>
+    </a>
+  </div>
+
+  <nav class="nav-links">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Главная</a>
+    <a routerLink="/history" routerLinkActive="active">История</a>
+  </nav>
 </div>

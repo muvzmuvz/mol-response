@@ -1,18 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgForOf } from '@angular/common';
+import { NgForOf, CommonModule } from '@angular/common';
 
-import { TuiTable } from '@taiga-ui/addon-table';
-import { TuiStatus } from '@taiga-ui/kit';
 import { TuiDay, TuiDayRange } from '@taiga-ui/cdk';
 import {
   TuiInputDateRange,
   TuiCalendarRange,
 } from '@taiga-ui/kit';
+import {
+  TuiStatus,
+} from '@taiga-ui/kit';
+import {
+  TuiTable
+} from '@taiga-ui/addon-table';
 import { TuiTextfield } from '@taiga-ui/core';
-
 import { HistoryService } from '../../service/historyService/history-service';
-import { Navbar } from "../../components/navbar/navbar";
+import { Navbar } from '../../components/navbar/navbar';
 
 @Component({
   selector: 'app-history-page',
@@ -21,49 +24,70 @@ import { Navbar } from "../../components/navbar/navbar";
     ReactiveFormsModule,
     FormsModule,
     NgForOf,
+    CommonModule,
     TuiTable,
     TuiStatus,
     TuiTextfield,
     TuiInputDateRange,
     TuiCalendarRange,
-    Navbar
-],
+    Navbar,
+  ],
   templateUrl: './history-page.html',
-  styleUrl: './history-page.less',
+  styleUrls: ['./history-page.less'],
 })
 export class HistoryPage implements OnInit {
-  constructor(private historyService: HistoryService) {}
+  constructor(private historyService: HistoryService) { }
 
-  protected data: any[] = [];
-  protected routeOptions: { id: string; name: string }[] = [];
-  protected size: 's' | 'm' | 'l' = 'm';
+  search = '';
+  data: any[] = [];
+  routeOptions: { id: string; name: string }[] = [];
 
-  protected route = 'all';
-  protected dateRange: TuiDayRange | null = null;
+  size: 's' | 'm' | 'l' = 'm';
+  route = 'all';
 
-  protected minDate = new TuiDay(2023, 0, 1); // Январь 2023
-  protected maxDate = TuiDay.currentLocal(); // Сегодня
+  // Начальные даты в формате Date
+  dateRange = {
+    from: '2025-01-01', // теперь строки для работы с input[type="date"]
+    to: new Date().toISOString().split('T')[0], // текущая дата в формате 'yyyy-mm-dd'
+  };
+
+  minDateString = '2023-01-01';
+  maxDateString = new Date().toISOString().split('T')[0];
+
+  minDate = new TuiDay(2023, 0, 1);
+  maxDate = TuiDay.currentLocal();
 
   ngOnInit(): void {
     this.loadHistory();
   }
 
-  private loadHistory(): void {
-    this.historyService.getAll().subscribe((history) => {
-      this.data = history.map((h) => ({
-        routeTitle: h.client.routeTitle,
-        organization: h.client.organization,
-        name: h.client.name,
-        phone: h.client.phone,
-        status: h.status,
-        date: h.date,
-      }));
+  loadHistory(): void {
+    this.historyService.getAll().subscribe((clients) => {
+      const allHistory = [];
+
+      for (const client of clients) {
+        const routeTitle = client.route?.title || 'Без маршрута';
+
+        for (const entry of client.history) {
+          allHistory.push({
+            routeTitle,
+            organization: client.organization,
+            name: client.name,
+            phone: client.phone,
+            status: entry.status,
+            date: entry.date,
+          });
+        }
+      }
+
+      this.data = allHistory;
 
       const routeNames = Array.from(
         new Set(
           this.data.map((d) => d.routeTitle?.split('-')[0]).filter(Boolean)
         )
       );
+
       this.routeOptions = [
         { id: 'all', name: 'Все маршруты' },
         ...routeNames.map((n) => ({ id: n, name: n })),
@@ -71,7 +95,13 @@ export class HistoryPage implements OnInit {
     });
   }
 
-  protected get filteredData() {
+  get filteredData() {
+    const searchTerm = this.search.toLowerCase().trim();
+
+    // Преобразуем строки в объекты Date для корректного сравнения
+    const fromDate = this.dateRange.from ? new Date(this.dateRange.from) : null;
+    const toDate = this.dateRange.to ? new Date(this.dateRange.to) : null;
+
     return this.data.filter((item) => {
       const routeMatch =
         this.route === 'all' ||
@@ -79,15 +109,22 @@ export class HistoryPage implements OnInit {
 
       const date = new Date(item.date);
       const dateMatch =
-        !this.dateRange ||
-        (date >= this.dateRange.from.toLocalNativeDate() &&
-          date <= this.dateRange.to.toLocalNativeDate());
+        (!fromDate || date >= fromDate) &&
+        (!toDate || date <= toDate);
 
-      return routeMatch && dateMatch;
+      const searchMatch =
+        !searchTerm ||
+        item.routeTitle.toLowerCase().includes(searchTerm) ||
+        item.organization.toLowerCase().includes(searchTerm) ||
+        item.name.toLowerCase().includes(searchTerm) ||
+        item.phone.toLowerCase().includes(searchTerm) ||
+        item.status.toLowerCase().includes(searchTerm);
+
+      return routeMatch && dateMatch && searchMatch;
     });
   }
 
-  protected getStatusColor(status: string): string {
+  getStatusColor(status: string): string {
     switch (status) {
       case 'Выполнено':
         return 'var(--tui-status-positive)';

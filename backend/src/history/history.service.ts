@@ -9,7 +9,7 @@ export class HistoryService {
   constructor(
     @InjectRepository(History)
     private repo: Repository<History>,
-  ) {}
+  ) { }
 
   record(client: Client) {
     const h = this.repo.create({
@@ -19,4 +19,17 @@ export class HistoryService {
     });
     return this.repo.save(h);
   }
+  async findByClientId(clientId: number) {
+    return this.repo.find({
+      where: {
+        client: { id: clientId }
+      },
+      relations: ['client'],
+      order: { date: 'DESC' }
+    });
+  }
+  async deleteByClientId(clientId: number) {
+    await this.repo.delete({ client: { id: clientId } });
+  }
+
 }
