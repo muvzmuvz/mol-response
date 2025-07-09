@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { RouteModule } from './route/route.module';
-import { OperatorModule } from './operator/operator.module';
-import { RequestModule } from './request/request.module';
+import { ClientModule } from './clients/client.module';
 import { HistoryModule } from './history/history.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -13,13 +13,13 @@ import { HistoryModule } from './history/history.module';
       type: 'sqlite',
       database: 'db.sqlite',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // В проде лучше false, для простоты сейчас true
+      synchronize: true,
     }),
-    RouteModule,
-    OperatorModule,
-    RequestModule,
-    HistoryModule,
     ScheduleModule.forRoot(),
+    RouteModule,
+    ClientModule,
+    HistoryModule,
+    TasksModule,
   ],
 })
 export class AppModule {}

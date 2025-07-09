@@ -1,32 +1,17 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, ParseIntPipe } from '@nestjs/common';
-import { RouteService } from './route.service';
+  import { Controller, Get, Post, Body } from '@nestjs/common';
+  import { RouteService } from './route.service';
 
-@Controller('routes')
-export class RouteController {
-  constructor(private readonly routeService: RouteService) {}
+  @Controller('routes')
+  export class RouteController {
+    constructor(private svc: RouteService) {}
 
-  @Get()
-  findAll() {
-    return this.routeService.findAll();
+    @Post()
+    create(@Body('title') title: string) {
+      return this.svc.create(title);
+    }
+
+    @Get()
+    findAll() {
+      return this.svc.findAll();
+    }
   }
-
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.routeService.findOne(id);
-  }
-
-  @Post()
-  create(@Body('name') name: string) {
-    return this.routeService.create(name);
-  }
-
-  @Put(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body('name') name: string) {
-    return this.routeService.update(id, name);
-  }
-
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.routeService.remove(id);
-  }
-}

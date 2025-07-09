@@ -1,84 +1,47 @@
 import { Component, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgForOf, NgIf } from '@angular/common';
-
+import { ClientService, ClientDto, CreateClientDto } from '../../service/clientService/client-service';
 import {
-  TuiAutoColorPipe,
-  TuiButton,
-  TuiDropdown,
-  TuiIcon,
-  TuiInitialsPipe,
-  TuiLink,
-  TuiTitle,
-  tuiItemsHandlersProvider,
-  TuiTextfield,
-  TuiLabel, // Добавлен TuiLabel
-  TuiDialog
+  TuiAutoColorPipe, TuiButton, TuiDropdown, TuiIcon, TuiInitialsPipe, TuiLink,
+  TuiTitle, tuiItemsHandlersProvider, TuiTextfield, TuiLabel, TuiDialog
 } from '@taiga-ui/core';
 import {
-  TuiAvatar,
-  TuiBadge,
-  TuiCheckbox,
-  TuiChip,
-  TuiItemsWithMore,
-  TuiProgressBar,
-  TuiRadioList,
-  TuiStatus,
+  TuiAvatar, TuiBadge, TuiCheckbox, TuiChip, TuiItemsWithMore,
+  TuiProgressBar, TuiRadioList, TuiStatus,
 } from '@taiga-ui/kit';
 import { TuiCell } from '@taiga-ui/layout';
 import { TuiTable, TuiTableFilters } from '@taiga-ui/addon-table';
 import { FormsModule } from '@angular/forms';
-
-interface RouteOption {
-  id: string;
-  name: string;
-}
+import { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-table-route',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
-    NgForOf,
-    NgIf,
-    TuiAutoColorPipe,
-    TuiAvatar,
-    TuiBadge,
-    TuiButton,
-    TuiCell,
-    TuiCheckbox,
-    TuiChip,
-    TuiDropdown,
-    TuiIcon,
-    TuiInitialsPipe,
-    TuiItemsWithMore,
-    TuiLink,
-    TuiProgressBar,
-    TuiRadioList,
-    TuiStatus,
-    TuiTable,
-    TuiTableFilters,
-    TuiTitle,
-    FormsModule,
-    TuiLabel, // добавлен
-    TuiTextfield,
-    TuiDialog // добавлен
+    ReactiveFormsModule, NgForOf, NgIf, TuiAutoColorPipe, TuiAvatar,
+    TuiBadge, TuiButton, TuiCell, TuiCheckbox, TuiChip, TuiDropdown,
+    TuiIcon, TuiInitialsPipe, TuiItemsWithMore, TuiLink, TuiProgressBar,
+    TuiRadioList, TuiStatus, TuiTable, TuiTableFilters, TuiTitle,
+    FormsModule, TuiLabel, TuiTextfield, TuiDialog
   ],
   templateUrl: './table-route.html',
   styleUrl: './table-route.less',
   providers: [
-    tuiItemsHandlersProvider<RouteOption>({
+    tuiItemsHandlersProvider<{ id: string; name: string }>({
       stringify: signal((item) => item.name),
       identityMatcher: signal((a, b) => a.id === b.id),
     }),
   ],
 })
-export class TableRoute {
+export class TableRoute implements OnInit {
+  constructor(private clientService: ClientService) { }
+
+  protected data: any[] = [];
+  protected routeOptions: { id: string; name: string }[] = [];
+  protected search = '';
   protected readonly sizes = ['l', 'm', 's'] as const;
   protected size = this.sizes[0];
-
-  // Свойство для поиска
-  protected search = '';
 
   protected readonly form = new FormGroup({
     route: new FormControl<string>('all'),
@@ -88,113 +51,61 @@ export class TableRoute {
     return this.form.get('route') as FormControl<string>;
   }
 
-  protected readonly data = [
-    {
-      id: 1,
-      checkbox: { title: 'Саки-4' },
-      title: {
-        icon: '@tui.file',
-        title: 'ИП Басова',
-        subtitle: 'Дополнительная информация ・ Данные',
+  ngOnInit(): void {
+    this.loadRoutes();
+  }
+
+  private loadRoutes(): void {
+    this.clientService.getAll().subscribe({
+      next: (routes) => {
+        this.data = routes.map((r) => this.mapDtoToView(r));
+        const routeNames = Array.from(
+          new Set(routes.map(r => r.route.title.split('-')[0]))
+        ).filter(name => name);
+
+        this.routeOptions = [
+          { id: 'all', name: 'Все маршруты' },
+          ...routeNames.map(n => ({ id: n, name: n }))
+        ];
       },
-      cell: {
-        phone: '+7 (999) 123-45-67',
-        name: 'Светлана Басова',
-        email: 'silly@walk.uk',
-      },
-      status: {
-        value: 'Выполнено',
-        color: 'var(--tui-status-positive)',
-      },
-      selected: false,
-    },
-    {
-      id: 2,
-      checkbox: { title: 'Саки-3', subtitle: 'Некоторый дополнительный текст' },
-      title: {
-        icon: '@tui.heart',
-        title: 'ИП Петров',
-        chip: 'Чипы могут быть здесь',
-      },
-      cell: {
-        phone: '+7 (999) 987-65-43',
-        name: 'Петр Петров',
-        email: 'cool@dude.com',
-      },
-      status: {
-        value: 'Не выполнено',
-        color: 'var(--tui-status-negative)',
-      },
-      selected: false,
-    },
-    {
-      id: 3,
-      checkbox: { title: 'Евпатория-2' },
-      // Добавлен icon для соответствия типу, subtitle убран (так как не указано)
-      title: {
-        icon: '@tui.user',  // Обязательное поле
-        title: 'ИП Петров',
-      },
-      cell: {
-        name: 'Петр Петров',
-        email: 'cool@dude.com',
-        phone: '+7 (999) 987-65-43',
-      },
-      status: {
-        value: 'В процессе',
-        color: 'var(--tui-status-warning)',
-      },
-      selected: false,
-    },
-    {
-      id: 4,
-      checkbox: { title: 'Севастополь-1' },
-      // Аналогично, добавлен icon, subtitle отсутствует
+      error: (err) => console.error('Ошибка загрузки маршрутов:', err)
+    });
+  }
+
+  private mapDtoToView(dto: ClientDto) {
+    return {
+      id: dto.id!,
+      checkbox: { title: dto.route.title },
       title: {
         icon: '@tui.user',
-        title: 'ИП Иванов',
+        title: dto.organization,
+        subtitle: 'Дополнительная информация',
       },
       cell: {
-        name: 'Иван Иванов',
-        email: 'ivan@example.com',
-        phone: '+7 (999) 555-44-33',
+        name: dto.name,
+        phone: dto.phone,
+        email: dto.email,
       },
       status: {
-        value: 'Выполнено',
-        color: 'var(--tui-status-positive)',
+        value: dto.status,
+        color: this.getStatusColor(dto.status),
       },
       selected: false,
-    },
-  ];
-
-  protected routeOptions: RouteOption[] = [];
-
-  constructor() {
-    const routes = this.data
-      .map((item) => item.checkbox.title.split('-')[0])
-      .filter(Boolean);
-
-    const uniqueRoutes = Array.from(new Set(routes));
-
-    this.routeOptions = [
-      { id: 'all', name: 'Все маршруты' },
-      ...uniqueRoutes.map(name => ({ id: name, name }))
-    ];
+      route: dto.route // Сохраняем объект маршрута
+    };
   }
 
   protected get filteredData() {
     const selectedRouteId = this.routeControl.value;
-    const searchTerm = this.search ? this.search.toLowerCase().trim() : '';
+    const searchTerm = this.search.toLowerCase().trim();
 
-    // Фильтрация по маршруту
-    let filtered = this.data;
+    let filtered = [...this.data];
     if (selectedRouteId !== 'all') {
       filtered = filtered.filter(item =>
         item.checkbox.title.toLowerCase().startsWith(selectedRouteId.toLowerCase())
       );
     }
 
-    // Фильтрация по поисковому запросу
     if (searchTerm) {
       filtered = filtered.filter(item =>
         this.isMatch(item.checkbox.title, searchTerm) ||
@@ -208,7 +119,6 @@ export class TableRoute {
     return filtered;
   }
 
-  // Проверяет, содержит ли строка искомый термин
   private isMatch(value: string | undefined, searchTerm: string): boolean {
     return value?.toLowerCase().includes(searchTerm) ?? false;
   }
@@ -220,9 +130,7 @@ export class TableRoute {
   }
 
   protected onCheck(checked: boolean): void {
-    this.data.forEach(item => {
-      item.selected = checked;
-    });
+    this.data.forEach(item => item.selected = checked);
   }
 
   isAddModalOpen = false;
@@ -230,8 +138,8 @@ export class TableRoute {
   editingRouteId: number | null = null;
 
   addForm = new FormGroup({
-    routeTitle: new FormControl('', { nonNullable: true }), // 🔹 новое поле — маршрут
-    organization: new FormControl('', { nonNullable: true }), // 🔹 новое поле
+    routeTitle: new FormControl('', { nonNullable: true }),
+    organization: new FormControl('', { nonNullable: true }),
     name: new FormControl('', { nonNullable: true }),
     phone: new FormControl('', { nonNullable: true }),
     email: new FormControl('', { nonNullable: true }),
@@ -240,7 +148,7 @@ export class TableRoute {
 
   editForm = new FormGroup({
     routeTitle: new FormControl('', { nonNullable: true }),
-    organization: new FormControl('', { nonNullable: true }), // 🔹 новое поле
+    organization: new FormControl('', { nonNullable: true }),
     name: new FormControl('', { nonNullable: true }),
     phone: new FormControl('', { nonNullable: true }),
     email: new FormControl('', { nonNullable: true }),
@@ -252,27 +160,37 @@ export class TableRoute {
   }
 
   submitAddForm() {
-    const newId = Math.max(...this.data.map(i => i.id)) + 1;
-    const { routeTitle, organization, name, phone, email, status } = this.addForm.value;
+    if (this.addForm.invalid) return;
 
-    this.data.push({
-      id: newId,
-      checkbox: { title: routeTitle! },
-      title: {
-        icon: '@tui.user',  // Добавил icon по правилам типа
-        title: organization!, // <- теперь отображаем организацию
-        subtitle: 'Дополнительная информация',
+    const dto = this.addForm.getRawValue();
+    this.clientService.addRoute(dto).subscribe({
+      next: (added) => {
+        // После успешного добавления маршрута заново загружаем все маршруты
+        this.loadRoutes();
+
+        // Сбрасываем форму и закрываем модальное окно
+        this.addForm.reset();
+        this.isAddModalOpen = false;
       },
-      cell: { phone: phone!, name: name!, email: email! },
-      status: {
-        value: status!,
-        color: this.getStatusColor(status!),
-      },
-      selected: false,
+      error: (err) => {
+        console.error('Ошибка добавления:', err);
+        // Можно добавить уведомление пользователю об ошибке
+      }
     });
+  }
+  deleteRoute(id: number): void {
+    if (!confirm('Вы действительно хотите удалить маршрут?')) return;
 
-    this.isAddModalOpen = false;
-    this.addForm.reset();
+    this.clientService.deleteRoute(id).subscribe({
+      next: () => {
+        // Удаляем маршрут из локального списка
+        this.data = this.data.filter(item => item.id !== id);
+      },
+      error: (err) => {
+        console.error('Ошибка удаления маршрута:', err);
+        // Тут можно показать уведомление об ошибке
+      }
+    });
   }
 
   editRoute(id: number) {
@@ -281,41 +199,38 @@ export class TableRoute {
 
     this.editingRouteId = id;
     this.editForm.setValue({
-      routeTitle: item.checkbox.title,
-      organization: item.title.title, // <- берём из title
+      routeTitle: item.route.title,
+      organization: item.title.title,
       name: item.cell.name,
       phone: item.cell.phone,
       email: item.cell.email,
       status: item.status.value,
     });
-
     this.isEditModalOpen = true;
   }
 
   submitEditForm() {
-    if (this.editingRouteId === null) return;
+    if (this.editingRouteId === null || this.editForm.invalid) return;
 
-    const item = this.data.find(d => d.id === this.editingRouteId);
-    if (!item) return;
-
-    const { routeTitle, organization, name, phone, email, status } = this.editForm.value;
-
-    item.checkbox.title = routeTitle!;
-    item.title.icon = '@tui.user'; // Добавляем icon при редактировании, чтобы не потерять тип
-    item.title.title = organization!;
-    item.cell.name = name!;
-    item.cell.phone = phone!;
-    item.cell.email = email!;
-    item.status.value = status!;
-    item.status.color = this.getStatusColor(status!);
-
-    this.isEditModalOpen = false;
-    this.editingRouteId = null;
+    const dto = this.editForm.getRawValue();
+    this.clientService.updateRoute(this.editingRouteId, dto).subscribe({
+      next: (updated) => {
+        const index = this.data.findIndex(d => d.id === this.editingRouteId);
+        if (index !== -1) {
+          this.data[index] = this.mapDtoToView(updated);
+        }
+        this.isEditModalOpen = false;
+        this.editingRouteId = null;
+      },
+      error: (err) => console.error('Ошибка обновления:', err)
+    });
   }
 
   cancelModals() {
     this.isAddModalOpen = false;
     this.isEditModalOpen = false;
+    this.addForm.reset();
+    this.editForm.reset();
   }
 
   private getStatusColor(status: string): string {

@@ -1,1 +1,46 @@
-<p>history-page works!</p>
+<app-navbar></app-navbar><!-- Фильтры -->
+<div class="filters-row">
+    <!-- Выбор маршрута -->
+    <label>
+        <select [(ngModel)]="route" class="custom-select">
+            <option *ngFor="let option of routeOptions" [value]="option.id">
+                {{ option.name }}
+            </option>
+        </select>
+    </label>
+
+    <!-- Выбор периода -->
+    <tui-textfield [tuiTextfieldCleaner]="true">
+        <label tuiLabel>Период:</label>
+        <input tuiInputDateRange [(ngModel)]="dateRange" [tuiTextfieldSize]="'m'" />
+        <tui-calendar-range [min]="minDate" [max]="maxDate" *tuiTextfieldDropdown />
+    </tui-textfield>
+</div>
+
+<!-- Таблица истории -->
+<table tuiTable [size]="size" [style.width.%]="95">
+    <thead>
+        <tr>
+            <th tuiTh>Маршрут</th>
+            <th tuiTh>Организация</th>
+            <th tuiTh>Имя</th>
+            <th tuiTh>Телефон</th>
+            <th tuiTh>Статус</th>
+            <th tuiTh>Дата</th>
+        </tr>
+    </thead>
+    <tbody tuiTbody>
+        <tr *ngFor="let item of filteredData">
+            <td tuiTd>{{ item.routeTitle }}</td>
+            <td tuiTd>{{ item.organization }}</td>
+            <td tuiTd>{{ item.name }}</td>
+            <td tuiTd>{{ item.phone }}</td>
+            <td tuiTd>
+                <span [tuiStatus]="getStatusColor(item.status)">
+                    {{ item.status }}
+                </span>
+            </td>
+            <td tuiTd>{{ item.date }}</td>
+        </tr>
+    </tbody>
+</table>

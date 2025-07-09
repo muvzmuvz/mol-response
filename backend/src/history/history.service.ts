@@ -1,32 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { History } from './history.entity';
 import { Repository } from 'typeorm';
-import { RequestHistory } from './request-history.entity';
+import { Client } from '../clients/client.entity';
 
 @Injectable()
 export class HistoryService {
   constructor(
-    @InjectRepository(RequestHistory)
-    private readonly historyRepository: Repository<RequestHistory>,
+    @InjectRepository(History)
+    private repo: Repository<History>,
   ) {}
 
-  findAll(): Promise<RequestHistory[]> {
-    return this.historyRepository.find({ relations: ['request'] });
-  }
-
-  findOne(id: number): Promise<RequestHistory | null> {
-    return this.historyRepository.findOne({
-      where: { id },
-      relations: ['request'],
+  record(client: Client) {
+    const h = this.repo.create({
+      client,
+      status: client.status,
+      date: new Date().toISOString().slice(0, 10),
     });
-  }
-
-  create(historyData: Partial<RequestHistory>): Promise<RequestHistory> {
-    const history = this.historyRepository.create(historyData);
-    return this.historyRepository.save(history);
-  }
-
-  async remove(id: number): Promise<void> {
-    await this.historyRepository.delete(id);
+    return this.repo.save(h);
   }
 }

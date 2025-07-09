@@ -72,6 +72,10 @@
         <button appearance="action" iconStart="@tui.ellipsis" size="xs" tuiIconButton type="button">
           Еще
         </button>
+        <button appearance="error" iconStart="@tui.trash" size="xs" tuiIconButton type="button"
+          (click)="deleteRoute(item.id)">
+          Удалить
+        </button>
       </td>
     </tr>
   </tbody>

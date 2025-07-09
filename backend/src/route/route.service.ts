@@ -7,30 +7,25 @@ import { Route } from './route.entity';
 export class RouteService {
   constructor(
     @InjectRepository(Route)
-    private routeRepository: Repository<Route>,
+    private repo: Repository<Route>,
   ) {}
 
-  findAll(): Promise<Route[]> {
-    return this.routeRepository.find();
+  create(title: string) {
+    const r = this.repo.create({ title });
+    return this.repo.save(r);
   }
 
-  findOne(id: number): Promise<Route | null> {
-    return this.routeRepository.findOneBy({ id });
+  findAll() {
+    return this.repo.find();
   }
 
-  create(name: string): Promise<Route> {
-    const route = this.routeRepository.create({ name });
-    return this.routeRepository.save(route);
+  findByTitle(title: string) {
+    return this.repo.findOne({ where: { title } });
   }
 
-  async update(id: number, name: string): Promise<Route | null> {
-    const route = await this.findOne(id);
-    if (!route) return null;
-    route.name = name;
-    return this.routeRepository.save(route);
-  }
-
-  async remove(id: number): Promise<void> {
-    await this.routeRepository.delete(id);
+  findOrCreate(title: string) {
+    return this.findByTitle(title).then(found => {
+      return found || this.create(title);
+    });
   }
 }
