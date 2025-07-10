@@ -8,6 +8,6 @@ export class HistoryService {
 
   // Новый путь — к клиентам с историей
   getAll(): Observable<any[]> {
-    return this.http.get<any[]>('http://192.168.0.174:3000/clients/with-history');
+    return this.http.get<any[]>('http://localhost:3000/clients/with-history');
   }
 }

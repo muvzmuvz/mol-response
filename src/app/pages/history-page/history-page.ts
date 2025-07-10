@@ -10,7 +10,7 @@ import {
 import { TuiStatus } from '@taiga-ui/kit';
 import { TuiTable } from '@taiga-ui/addon-table';
 import { TuiTextfield } from '@taiga-ui/core';
-
+import { TuiCell } from '@taiga-ui/layout';
 import { HistoryService } from '../../service/historyService/history-service';
 import { Navbar } from '../../components/navbar/navbar';
 
@@ -28,13 +28,14 @@ import { Navbar } from '../../components/navbar/navbar';
     TuiInputDateRange,
     TuiCalendarRange,
     Navbar,
+    TuiCell
   ],
   templateUrl: './history-page.html',
   styleUrls: ['./history-page.less'],
 })
 export class HistoryPage implements OnInit {
   constructor(private historyService: HistoryService) { }
-
+  protected readonly sizes = ['l', 'm', 's'] as const;
   sortColumn: string = ''; // какая колонка сортируется
   sortDirection: 'asc' | 'desc' = 'asc'; // направление сортировки
   search = '';

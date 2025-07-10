@@ -28,21 +28,21 @@
 <table tuiTable [size]="size" [style.width.%]="95">
   <thead>
     <tr>
-      <th tuiTh (click)="onSort('route')">
+      <th tuiTh (click)="onSort('route')" style="cursor:pointer">
         Маршруты
-        <span *ngIf="sortColumn === 'route'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+        <span *ngIf="sortColumn === 'route'" >{{ sortDirection === 'asc' ? '▲' : '▼' }} </span>
       </th>
-      <th tuiTh (click)="onSort('organization')">
+      <th tuiTh (click)="onSort('organization')" style="cursor:pointer">
         Организация
-        <span *ngIf="sortColumn === 'organization'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+        <span *ngIf="sortColumn === 'organization'" >{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
       </th>
-      <th tuiTh (click)="onSort('phone')">
+      <th tuiTh (click)="onSort('phone')" style="cursor:pointer">
         Номер телефона
-        <span *ngIf="sortColumn === 'phone'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+        <span *ngIf="sortColumn === 'phone'" >{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
       </th>
-      <th tuiTh (click)="onSort('status')">
+      <th tuiTh (click)="onSort('status')" style="cursor:pointer">
         Статус
-        <span *ngIf="sortColumn === 'status'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+        <span *ngIf="sortColumn === 'status'" >{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
       </th>
         
       <th tuiTh>

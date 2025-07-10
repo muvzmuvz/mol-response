@@ -31,17 +31,17 @@ export class ClientService {
   constructor(private http: HttpClient) { }
 
   getAll(): Observable<ClientDto[]> {
-    return this.http.get<ClientDto[]>('http://192.168.0.174:3000/clients');
+    return this.http.get<ClientDto[]>('http://localhost:3000/clients');
   }
 
   addRoute(dto: CreateClientDto): Observable<ClientDto> {
-    return this.http.post<ClientDto>('http://192.168.0.174:3000/clients', dto);
+    return this.http.post<ClientDto>('http://localhost:3000/clients', dto);
   }
 
   updateRoute(id: number, dto: Partial<CreateClientDto>): Observable<ClientDto> {
-    return this.http.patch<ClientDto>(`http://192.168.0.174:3000/clients/${id}`, dto);
+    return this.http.patch<ClientDto>(`http://localhost:3000/clients/${id}`, dto);
   }
   deleteRoute(id: number): Observable<void> {
-  return this.http.delete<void>(`http://192.168.0.174:3000/clients/${id}`);
+  return this.http.delete<void>(`http://localhost:3000/clients/${id}`);
 }
 }

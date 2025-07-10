@@ -12,7 +12,7 @@ export interface Route {
   providedIn: 'root'
 })
 export class RouteService {
-  private apiUrl = 'http://192.168.0.174:3000/routes';
+  private apiUrl = 'http://localhost:3000/routes';
 
   constructor(private http: HttpClient) {}
 
